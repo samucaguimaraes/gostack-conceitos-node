@@ -20,10 +20,7 @@ function validateRepositoryId(request, response, next){
   return next();
 }
 
-app.get("/repositories", (request, response) => {
-  return response.json(repositories);
-});
-
+/** Criando um novo repositório */
 app.post("/repositories", (request, response) => {
   const {title, url, techs} = request.body;
   const repository = { 
@@ -39,6 +36,24 @@ app.post("/repositories", (request, response) => {
 
 });
 
+/** LIstar todos os repositorios */
+app.get("/repositories", (request, response) => {
+  return response.json(repositories);
+});
+
+app.delete("/repositories/:id", validateRepositoryId, (request, response) => {
+  const {id} = request.params;
+  
+  /** Id da posição ou -1 (caso não exista) */
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+  
+  /** Deletando posição do array */
+  repositories.splice(repositoryIndex,1);
+  return response.status('204').send();
+
+});
+
+/** Update de repositorio */
 app.put("/repositories/:id", validateRepositoryId, (request, response) => {
   const {id} = request.params;
   const { title, url, techs} = request.body;
@@ -50,23 +65,14 @@ app.put("/repositories/:id", validateRepositoryId, (request, response) => {
     url,
     title,
     techs,
-    likes: repositories[repositoryIndex].likes 
+    likes: repositories[repositoryIndex].likes, 
   };
   /** Atualizando o array repositories */
   repositories[repositoryIndex] = repository;
   return response.json(repository);
 });
 
-app.delete("/repositories/:id", validateRepositoryId, (request, response) => {
-  const {id} = request.params;
-  /** Id da posição ou -1 (caso não exista) */
-  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
-  /** Deletando posição do array */
-  repositories.splice(repositoryIndex,1);
-  return response.status('204').send()
-
-});
-
+/** Rota de likes: A cada chamada dessa rota o número de likes deve ser icrementado em 1 */
 app.post("/repositories/:id/like", validateRepositoryId, (request, response) => {
   const {id} = request.params;
   
